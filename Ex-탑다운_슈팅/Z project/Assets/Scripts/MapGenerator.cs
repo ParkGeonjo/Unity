@@ -19,6 +19,9 @@ public class MapGenerator : MonoBehaviour
     public float tileSize; // 타일 사이즈
     List<Coord> allTileCoords; // 모든 좌표값을 저장할 리스트 생성
     Queue<Coord> shuffledTileCoords; // 셔플된 좌표값을 저장할 큐 생성
+    Queue<Coord> shuffledOpenTileCoords; // 셔플된 오픈 타일 좌표값을 저장할 큐 생성
+
+    Transform[,] tileMap; // 생성한 타일맵 배열
 
     Map currentMap; // 현재 맵
 
@@ -29,6 +32,7 @@ public class MapGenerator : MonoBehaviour
     // ■ 맵 생성 메소드
     public void GeneratorMap() {
         currentMap = maps[mapIndex]; // 맵 설정
+        tileMap = new Transform[currentMap.mapSize.x, currentMap.mapSize.y]; // 타일맵 배열 크기 설정
         System.Random prng = new System.Random(currentMap.seed); // 난수 생성
         GetComponent<BoxCollider>().size = new Vector3(currentMap.mapSize.x * tileSize, 0.05f, currentMap.mapSize.y * tileSize);
         // 박스 콜라이더 맵 크기로 설정
@@ -75,6 +79,8 @@ public class MapGenerator : MonoBehaviour
                    크기를 지정한 테두리 두께만큼 줄여서 지정한다.  */
                 newTile.parent = mapHolder;
                 // 타일의 부모 오브젝트 설정
+                tileMap[x, y] = newTile;
+                // 타일맵 배열에 타일 저장
             }
         }
 
@@ -83,6 +89,9 @@ public class MapGenerator : MonoBehaviour
         int currentObstacleCount = 0; // 현재 올바른 장애물 생성 개수
 
         int obstacleCount = (int)(currentMap.mapSize.x * currentMap.mapSize.y * currentMap.obstaclePercent); // 지정한 비율에 따른 장애물 개수
+
+        List<Coord> allOpenCoords = new List<Coord>(allTileCoords); // 오픈 타일 배열, 일단 모든 타일 좌표로 초기화.
+
         for (int i = 0; i < obstacleCount; i++) { // 장애물 갯수만큼 루프
             Coord randomCoord = GetRandomCoord(); // 랜덤한 좌표를 받아옴
             obstaclemap[randomCoord.x, randomCoord.y] = true; // 해당 랜덤 위치 활성화
@@ -113,6 +122,9 @@ public class MapGenerator : MonoBehaviour
                 // 장애물 색상 설정
                 obstacleRenderer.sharedMaterial = obstacleMatetial;
                 // 장애물의 셰어드 마테리얼 설정
+
+                allOpenCoords.Remove(randomCoord);
+                // 오픈 타일 좌표만 남기기 위해 모든 타일 좌표에서 장애물이 있는 타일 좌표를 빼준다.
             }
             else { // 장애물 생성 조건이 맞지 않는 경우
                 obstaclemap[randomCoord.x, randomCoord.y] = false; // 해당 랜덤 위치 비활성화
@@ -120,35 +132,37 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
+        shuffledOpenTileCoords = new Queue<Coord>(Utility.ShuffleArray(allOpenCoords.ToArray(), currentMap.seed));
+        // 새 큐 생성, 셔플된 오픈 타일 좌표값 배열을 저장함
+
         // ■ 내브메쉬 마스크 생성
         Transform maskLeft = Instantiate(navemeshMaskPrefab, Vector3.left * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity) as Transform;
         // 왼쪽 맵 바깥 마스킹 오브젝트 생성
         maskLeft.parent = mapHolder;
         // 부모 오브젝트 설정
-        maskLeft.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2f * tileSize, 1, currentMap.mapSize.y * tileSize);
+        maskLeft.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2f * tileSize, 3, currentMap.mapSize.y * tileSize);
         // 왼쪽 맵 바깥 마스킹 오브젝트 크기 설정
 
         Transform maskRight = Instantiate(navemeshMaskPrefab, Vector3.right * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity) as Transform;
         // 오른쪽 맵 바깥 마스킹 오브젝트 생성
         maskRight.parent = mapHolder;
         // 부모 오브젝트 설정
-        maskRight.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2f * tileSize, 1, currentMap.mapSize.y * tileSize);
+        maskRight.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2f * tileSize, 3, currentMap.mapSize.y * tileSize);
         // 오른쪽 맵 바깥 마스킹 오브젝트 크기 설정
 
         Transform maskTop = Instantiate(navemeshMaskPrefab, Vector3.forward * (currentMap.mapSize.y + maxMapSize.y) / 4f * tileSize, Quaternion.identity) as Transform;
         // 위쪽 맵 바깥 마스킹 오브젝트 생성
         maskTop.parent = mapHolder;
         // 부모 오브젝트 설정
-        maskTop.localScale = new Vector3(maxMapSize.x * tileSize, 1, (maxMapSize.y - currentMap.mapSize.y) / 2f * tileSize);
+        maskTop.localScale = new Vector3(maxMapSize.x * tileSize, 3, (maxMapSize.y - currentMap.mapSize.y) / 2f * tileSize);
         // 위쪽 맵 바깥 마스킹 오브젝트 크기 설정
 
         Transform maskBottom = Instantiate(navemeshMaskPrefab, Vector3.back * (currentMap.mapSize.y + maxMapSize.y) / 4f * tileSize, Quaternion.identity) as Transform;
         // 아래쪽 맵 바깥 마스킹 오브젝트 생성
         maskBottom.parent = mapHolder;
         // 부모 오브젝트 설정
-        maskBottom.localScale = new Vector3(maxMapSize.x * tileSize, 1, (maxMapSize.y - currentMap.mapSize.y) / 2f * tileSize);
+        maskBottom.localScale = new Vector3(maxMapSize.x * tileSize, 3, (maxMapSize.y - currentMap.mapSize.y) / 2f * tileSize);
         // 아래쪽 맵 바깥 마스킹 오브젝트 크기 설정
-
 
         navmeshFloor.localScale = new Vector3(maxMapSize.x, maxMapSize.y) * tileSize;
         // 지정한 최대 맵 사이즈에 맞게 내브메쉬 바닥 크기 조정
@@ -201,12 +215,36 @@ public class MapGenerator : MonoBehaviour
         // 입력받은 x, y 좌표로 Vector3 상의 타일 위치 설정
     }
 
+    // ■ 플레이어 좌표 -> 타일 좌표 변환 메소드
+    public Transform GetTileFromPosition(Vector3 position) {
+        int x = Mathf.RoundToInt(position.x / tileSize + (currentMap.mapSize.x - 1) / 2f);
+        // 타일 x 좌표 계산, int 형변환시 내림하기 때문에 메소드를 통해 정수로 반올림한다.
+        int y = Mathf.RoundToInt(position.z / tileSize + (currentMap.mapSize.y - 1) / 2f);
+        // 타일 y 좌표 계산.
+
+        x = Mathf.Clamp(x, 0, tileMap.GetLength(0) - 1);
+        // 타일맵 배열 인덱스 초과 오류 방지를 위해 x 값 제한.
+        y = Mathf.Clamp(y, 0, tileMap.GetLength(1) - 1);
+        // 타일맵 배열 인덱스 초과 오류 방지를 위해 y 값 제한.
+
+        return tileMap[x, y];
+        // 타일 위치 반환
+    }
+
     // ■ 큐에 저장된 좌표를 가져오는 메소드
     public Coord GetRandomCoord() {
         Coord randomCoord = shuffledTileCoords.Dequeue(); // 큐의 첫 번째 값을 가져온다.
         shuffledTileCoords.Enqueue(randomCoord); // 가져온 값을 큐의 맨 뒤로 넣는다.
 
         return randomCoord;
+    }
+
+    // ■ 랜덤한 오픈 타일을 가져오는 메소드
+    public Transform GetRandomOpenTile() {
+        Coord randomCoord = shuffledOpenTileCoords.Dequeue(); // 큐의 첫 번째 값을 가져온다.
+        shuffledOpenTileCoords.Enqueue(randomCoord); // 가져온 값을 큐의 맨 뒤로 넣는다.
+
+        return tileMap[randomCoord.x, randomCoord.y]; // 큐에 저장된 오픈 타일을 반환
     }
 
     // ■ 타일 좌표 구조체

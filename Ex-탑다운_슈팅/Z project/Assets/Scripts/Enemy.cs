@@ -10,6 +10,8 @@ public class Enemy : LivingEntity
     // 적의 상태, { 기본(아무것도 안함), 추적, 공격 }
     State currentState; // 현재 상태
 
+    public ParticleSystem deathEffect; // 사망 이펙트 레퍼런스
+
     UnityEngine.AI.NavMeshAgent pathfinder; // 내비게이션 레퍼런스
     Transform target; // 적의 타겟(플레이어) 트랜스폼
     LivingEntity targetEntity; // 타겟(플레이어) 레퍼런스
@@ -65,6 +67,16 @@ public class Enemy : LivingEntity
             StartCoroutine(UpdatePath());
             // 지정된 시간마다 목적지 쪽으로 위치를 갱신하는 코루틴 실행
         }
+    }
+
+    // ■ 타격 메소드 오버라이딩
+    public override void TakeHit(float damage, Vector3 hitPoint, Vector3 hitDirection) {
+        if(damage >= health) { // 데미지가 현재 체력 이상인 경우
+            Destroy(Instantiate(deathEffect.gameObject, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection)) as GameObject, deathEffect.startLifetime);
+            // 이펙트(파티클)을 인스턴스화 하여 생성(FromToRotation 으로 방향 설정), 설정한 시간경과 후 파괴
+        }
+        base.TakeHit(damage, hitPoint, hitDirection);
+        // 부모 클래스의 기존 TakeHit 메소드 호출
     }
 
     void OnTargetDeath() // 타겟(플레이어)이 죽었을 때 호출되는 메소드

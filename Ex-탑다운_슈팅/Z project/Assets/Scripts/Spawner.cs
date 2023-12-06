@@ -27,7 +27,7 @@ public class Spawner : MonoBehaviour
 
     bool isDisable; // 플레이어 생존 여부
 
-    public event System.Action<int> OnNewWave; // 새 웨이브 이벤트 추가
+    public event System.Action<int> OnNewWave; // 웨이브 번호를 매개변수로 갖는 웨이브 이벤트 추가
 
     void Start() {
         playerEntity = FindObjectOfType<Player>(); // 플레이어 오브젝트 할당
@@ -132,9 +132,17 @@ public class Spawner : MonoBehaviour
         }
     }
 
-    void NextWave() // 다음 웨이브 실행 메소드
+    // ■ 플레이어 위치 리셋 메소드 
+    void ResetPlayerPosition() {
+        playerT.position = map.GetTileFromPosition(Vector3.zero).position + Vector3.up * 1.5f;
+        // 플레이어 위치를 가운데 타일 위치로 설정
+    }
+
+
+    // ■ 다음 웨이브 실행 메소드
+    void NextWave() 
     {
-        currentWaveNumber++; // 웨이브 숫자 증가
+        currentWaveNumber++; // 웨이브 숫자 증가 
 
         if(currentWaveNumber - 1 < waves.Length) { // 배열 인덱스 예외 없도록 처리
             currentWave = waves[currentWaveNumber - 1];
@@ -145,10 +153,11 @@ public class Spawner : MonoBehaviour
             // 이번 웨이브의 적 수 저장
             enemiesRemainingAlive = enemiesRemainingToSpawn;
             // 살아있는 적의 수를 스폰 할 적의 수로 저장
-        }
 
-        if(OnNewWave != null) {
-            OnNewWave(currentWaveNumber);
+            if (OnNewWave != null) { // 이벤트 구독자가 있는 경우
+                OnNewWave(currentWaveNumber); // 웨이브 번호 전달
+            }
+            ResetPlayerPosition(); // 플레이어 위치 초기화
         }
     }
 

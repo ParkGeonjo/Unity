@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LivingEntity : MonoBehaviour, IDamaneable // 인터페이스 상속
+public class LivingEntity : MonoBehaviour, IDamageable // 인터페이스 상속
 {
     public float startingHealth; // 시작 체력
     protected float health; // 체력
@@ -17,18 +17,18 @@ public class LivingEntity : MonoBehaviour, IDamaneable // 인터페이스 상속
        void 를 리턴하고 입력을 받지 않는다. */
 
     protected virtual void Start()
-    // 상속 받는 클래스의 같은 메소드를 재정의 할 수 있도록 virtual 로 선언.
+    // 상속 받는 클래스에서 같은 메소드를 재정의 할 수 있도록 virtual 로 선언.
     {
         health = startingHealth; // 시작 체력 설정
     }
 
-    public void TakeHit(float damage, RaycastHit hit) // 데미지 받는 메소드 구현
-    {
+    // ■ 타격 메소드
+    public virtual void TakeHit(float damage, Vector3 hitPoint, Vector3 hitDirection) {
         TakeDamage(damage); // 데미지 받는 메소드 호출
     }
 
-    public void TakeDamage(float damage) // 데미지 받는 메소드 구현
-    {
+    // ■ 데미지 받는 메소드
+    public virtual void TakeDamage(float damage) {
         health -= damage; // 체력에서 데미지만큼 감소
         if (health <= 0 && !dead) // 체력이 0 이하고 죽은 경우
         {
@@ -36,6 +36,8 @@ public class LivingEntity : MonoBehaviour, IDamaneable // 인터페이스 상속
         }
     }
 
+    [ContextMenu("Self-Destruct")]
+    // 인스펙터에서 스크립트 컴포넌트 우클릭 시 자체 파괴 버튼 추가
     protected void Die() // 죽음 메소드
     {
         dead = true; // 죽은 판정으로 변경.

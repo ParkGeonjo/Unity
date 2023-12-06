@@ -26,8 +26,15 @@ public class MapGenerator : MonoBehaviour
     Map currentMap; // 현재 맵
 
     void Start() {
-        GeneratorMap();
+        FindObjectOfType<Spawner>().OnNewWave += OnNewWave; // 이벤트 구독
     }
+
+    // ■ 웨이브 이벤트 구독자 메소드
+    void OnNewWave(int waveNumber) {
+        mapIndex = waveNumber - 1; // 맵 배열 인덱스 설정
+        GeneratorMap(); // 맵 생성
+    }
+
 
     // ■ 맵 생성 메소드
     public void GeneratorMap() {

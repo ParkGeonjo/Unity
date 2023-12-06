@@ -22,7 +22,7 @@ public class Projectile : MonoBehaviour
         if(initialCollisions.Length > 0)
         // 위 배열의 길이가 0 보다 큰 경우, 즉 충돌체가 하나라도 있는 경우
         {
-            OnHitObject(initialCollisions[0]);
+            OnHitObject(initialCollisions[0], transform.position);
             // 충돌 처리 메소드를 호출하고 첫 번째 충돌체를 전달.
         }
     }
@@ -49,34 +49,20 @@ public class Projectile : MonoBehaviour
         /* 레이캐스트로 발사체가 오브젝트나 레이어에 닿았는지 확인.
            QueryTriggerInteraction 을 Collide 로 하여 트리거 콜라이더와 충돌 하게 설정. */
         {
-            OnHitObject(hit); // 충돌 처리 메소드 호출
+            OnHitObject(hit.collider, hit.point); // 충돌 처리 메소드 호출
         }
     }
 
-    void OnHitObject(RaycastHit hit) // 충돌 시 처리 메소드 (레이캐스트 사용)
+    void OnHitObject(Collider c, Vector3 hitPoint) // 충돌 시 처리 메소드
     {
-        IDamaneable damageableObject = hit.collider.GetComponent<IDamaneable>();
-        // 인터페이스 변수 생성, 발사체에 맞은 오브젝트의 인터페이스를 가져와 저장.
-        if(damageableObject != null)
-        /* 위 변수가 null 이 아닐 때,
-           즉 맞은 오브젝트에 인터페이스가 있는, 데미지를 받는 오브젝트인 경우. */
-        {
-            damageableObject.TakeHit(damage, hit);
-            // 해당 오브젝트 인터페이스의 데미지 받기 메소드를 호출
-        }
-        GameObject.Destroy(gameObject); // 현재 오브젝트(발사체) 제거
-    }
-
-    void OnHitObject(Collider c) // 충돌 시 처리 메소드 (레이캐스트 사용 X)
-    {
-        IDamaneable damageableObject = c.GetComponent<IDamaneable>();
+        IDamageable damageableObject = c.GetComponent<IDamageable>();
         // 인터페이스 변수 생성, 발사체에 맞은 오브젝트의 인터페이스를 가져와 저장.
         if (damageableObject != null)
         /* 위 변수가 null 이 아닐 때,
            즉 맞은 오브젝트에 인터페이스가 있는, 데미지를 받는 오브젝트인 경우. */
         {
-            damageableObject.TakeDamage(damage);
-            // 해당 오브젝트 인터페이스의 데미지 받기 메소드를 호출
+            damageableObject.TakeHit(damage, hitPoint, transform.forward);
+            // 해당 오브젝트 인터페이스의 타격 메소드를 호출
         }
         GameObject.Destroy(gameObject); // 현재 오브젝트(발사체) 제거
     }

@@ -13,6 +13,7 @@ public class GameUI : MonoBehaviour {
 
     // ■ 플레이어 사망(게임 오버) 시 UI 처리 메소드
     void OnGameOver() {
+        Cursor.visible = true; // 마우스 커서 보이도록 설정
         StartCoroutine(Fade(Color.clear, Color.black, 1)); // 배경 이미지 페이드 인 효과 코루틴 시작
         gameOverUI.SetActive(true); // 게임 오버 텍스트, 버튼 오브젝트 활성화
     }

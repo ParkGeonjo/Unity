@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
+    public bool devMode; // 개발자 모드 여부
+
     public Wave[] waves; // 웨이브들을 저장할 배열 생성
     public Enemy enemy; // 스폰할 적 레퍼런스
 
@@ -65,7 +67,16 @@ public class Spawner : MonoBehaviour
                 nextSpawnTime = Time.time + currentWave.timeBetweenSpawns;
                 // 다음 스폰 시간을 현재시간 + 스폰 간격 으로 저장
 
-                StartCoroutine(SpawnEnemy()); // 적 스폰 코루틴 시작 
+                StartCoroutine("SpawnEnemy"); // 적 스폰 코루틴 시작 
+            }
+        }
+        if (devMode) { // 개발자 모드인 경우
+            if(Input.GetKeyDown(KeyCode.Return)) { // 버튼을 누른 경우
+                StopCoroutine("SpawnEnemy"); // 적 스폰 코루틴 중지
+                foreach(Enemy enemy in FindObjectsOfType<Enemy>()) { // Enemy 오브젝트를 모두 찾고
+                    GameObject.Destroy(enemy.gameObject); // 해당 게임 오브젝트 파괴
+                }
+                NextWave(); // 다음 웨이브 실행
             }
         }
     }

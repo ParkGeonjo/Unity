@@ -15,6 +15,8 @@ public class Gun : MonoBehaviour
     public int burstCount; // 점사 모드 총알 발사 개수
     public int shotsRemainingInBurst; // 점사 모드 남은 총알
 
+    public Vector2 kickMinMax; // 반동 최소, 최대값
+
     public Transform shell; // 탄피 레퍼런스
     public Transform shellEjection; // 탄피 배출 위치 레퍼런스
 
@@ -24,16 +26,30 @@ public class Gun : MonoBehaviour
 
     bool triggerReleasedSinceLastShoot; // 지난 발사 후 방아쇠(마우스 좌클릭)을 놓았는지
 
+    Vector3 recoilSmoothDampVelocity; // 반동 회복 속도
+    float recoilRotSmoothDampVelocity; // 반동 회복 속도
+    float recoilAngle; // 반동 각도
+    
+
     void Start() {
         muzzleFlash = GetComponent<MuzzleFlash>(); // 총구 화염 레퍼런스 할당
         shotsRemainingInBurst = burstCount; // 점사 모드 남은 총알 개수 설정
+    }
+
+    void LateUpdate() {
+        transform.localPosition = Vector3.SmoothDamp(transform.localPosition, Vector3.zero, ref recoilSmoothDampVelocity, .1f);
+        // SmoothDamp 를 통해 부드러운 움직임으로 현재 위치에서 목표위치인 zero 까지 지정한 속도로 .1f 의 시간동안 움직인다.
+        recoilAngle = Mathf.SmoothDamp(recoilAngle, 0, ref recoilRotSmoothDampVelocity, .1f);
+        // 위와 같이 각도 또한 부드럽게 원지점으로 복구하도록 함
+        transform.localEulerAngles = transform.localEulerAngles + Vector3.right * recoilAngle;
     }
 
     void Shoot() // 총알 발사 메소드
     {
         if(Time.time > nextShotTime) // 총알 발사 시간이 지났는지 확인
         {
-            if(fireMode == FireMode.Burst) { // 무기 발사 모드가 점사인 경우
+            // □ 무기 모드 설정에 따른 발사
+            if (fireMode == FireMode.Burst) { // 무기 발사 모드가 점사인 경우
                 if(shotsRemainingInBurst == 0) { // 발사 할 남은 총알이 없는 경우
                     return; // 아래 코드(총알 발사) 실행 건너뜀
                 }
@@ -45,6 +61,7 @@ public class Gun : MonoBehaviour
                 }
             }
 
+            // □ 총알 생성 및 발사
             for (int i = 0; i < projectileSpawn.Length; i++) { // 총알 발사 개수만큼 반복
                 nextShotTime = Time.time + msBetweenShots / 1000; // 다음 총알 발사 시작 시간 저장
                 Projectile newProjectile = Instantiate(projectile, projectileSpawn[i].position, projectileSpawn[i].rotation) as Projectile;
@@ -52,9 +69,21 @@ public class Gun : MonoBehaviour
                 newProjectile.SetSpeed(muzzleVelocity); // 총알 발사 속도 설정
             }
 
+            // □ 무기 이펙트(탄피, 총구 화염)
             Instantiate(shell, shellEjection.position, shellEjection.rotation); // 탄피 인스턴스화 하여 생성
             muzzleFlash.Activate(); // 총구 화염 생성
+
+            // □ 무기 반동
+            transform.localPosition -= Vector3.forward * Random.Range(kickMinMax.x, kickMinMax.y); // 무기 뒤쪽방향으로 이동
+            recoilAngle += 5; // 무기 위쪽으로 회전
+            recoilAngle = Mathf.Clamp(recoilAngle, 0, 30); // 무기 반동 각도 범위 지정
         }
+    }
+
+
+    // ■ 에임 보정 메소드
+    public void Aim(Vector3 aimPoint) {
+        transform.LookAt(aimPoint); // 전달받은 위치를 보도록 방향 설정
     }
 
     // ■ 방아쇠(마우스 좌클릭)를 누르고 있을 때

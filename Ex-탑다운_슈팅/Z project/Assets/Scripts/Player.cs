@@ -7,6 +7,9 @@ using UnityEngine;
 public class Player : LivingEntity
 {
     public float moveSpeed = 5.0f; // 플레이어 이동속도
+
+    public Crosshair crosshairs; // 조준점 레퍼런스
+
     Camera viewCamera; // 카메라
     PlayerController controller; // 플레이어 컨트롤러
     GunController gunController; // 총 컨트롤러
@@ -33,7 +36,7 @@ public class Player : LivingEntity
         // 방향 입력
         Ray ray = viewCamera.ScreenPointToRay(Input.mousePosition);
         // 카메라 -> 마우스 커서 위치로 레이 발사.
-        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        Plane groundPlane = new Plane(Vector3.up, Vector3.up * gunController.GunHeight);
         // 평면의 법선벡터 생성.
         float rayDistance;
         // 위에서 쏜 레이와 평면의 교차지점까지 거리
@@ -43,8 +46,19 @@ public class Player : LivingEntity
             Vector3 point = ray.GetPoint(rayDistance);
             // GetPoint 와 교차지점까지의 거리로 교차지점의 위치를 저장.
             // 카메라부터 교차지점까지 선으로 표시 : Debug.DrawLine(ray.origin, point, Color.red);
+
             controller.LookAt(point);
             // 플레이어 컨트롤러의 방향 전환 메소드에 교차 지점(방향) 전달.
+            crosshairs.transform.position = point;
+            // 조준점 위치 설정
+            crosshairs.DetectTarget(ray);
+            // 조준점 레이캐스트
+
+            if((new Vector2(point.x, point.z) - new Vector2(transform.position.x, transform.position.z)).sqrMagnitude > 1) {
+            // 조준점(커서)와 플레이어 사이 거리가 1 이상일 때
+                gunController.Aim(point);
+                // 총 에임 보정 위치 전달
+            }
         }
 
         // 무기 조작 입력

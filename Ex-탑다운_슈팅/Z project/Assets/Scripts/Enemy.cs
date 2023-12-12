@@ -82,7 +82,7 @@ public class Enemy : LivingEntity
         }
         startingHealth = enemyHealth; // 적의 체력 설정
 
-        skinMatreial = GetComponent<Renderer>().material; // 현재 오브젝트의 마테리얼 저장.
+        skinMatreial = GetComponent<Renderer>().sharedMaterial; // 현재 오브젝트의 마테리얼 저장.
         skinMatreial.color = skinColour; // 적의 색상 설정
         originalColor = skinMatreial.color; // 현재 색상 저장
     }
@@ -144,6 +144,7 @@ public class Enemy : LivingEntity
         float attackSpeed = 3; // 공격 속도
         float percent = 0;
 
+        skinMatreial = GetComponent<Renderer>().material; // 현재 오브젝트의 마테리얼 저장.
         skinMatreial.color = Color.magenta; // 공격 시 색상 지정
 
         bool hasAppliedDamage = false; // 데미지를 적용 중인지 확인

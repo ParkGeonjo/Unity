@@ -16,12 +16,23 @@ public class Player : LivingEntity
 
     protected override void Start() { // override 로 부모 클래스의 메소드를 재정의.
         base.Start(); // base 를 통해 부모 클래스의 기존 메소드를 호출.
+    }
+
+    void Awake() {
         controller = GetComponent<PlayerController>();
         // 현재 오브젝트의 플레이어 컨트롤러를 가져옴
         gunController = GetComponent<GunController>();
         // 현재 오브젝트의 총 컨트롤러를 가져옴
         viewCamera = Camera.main;
         // 카메라
+        FindObjectOfType<Spawner>().OnNewWave += OnNewWave;
+        // Spawner 의 새 웨이브 시작 이벤트 구독
+    }
+
+    // ■ 새 웨이브 시작 시 메소드
+    void OnNewWave(int waveNumber) {
+        health = startingHealth; // 체력 초기화
+        gunController.EquipGun(waveNumber - 1); // 장착할 총 설정
     }
 
     void Update() {
@@ -70,6 +81,11 @@ public class Player : LivingEntity
         if (Input.GetMouseButtonUp(0)) // 마우스 왼쪽 버튼 클릭 후 손을 뗄 시
         {
             gunController.OnTriggerRelease(); // 방아쇠 놓음 메소드 호출
+        }
+
+        if (Input.GetKeyDown(KeyCode.R)) // 키보드 R 버튼 누를 경우
+        {
+            gunController.Reload(); // 재장전 메소드 호출
         }
     }
 }

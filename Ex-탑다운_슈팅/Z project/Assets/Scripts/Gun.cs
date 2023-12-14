@@ -5,43 +5,45 @@ using UnityEngine;
 public class Gun : MonoBehaviour
 {
     public enum FireMode {Auto, Burst, Single}; // 총 격발 모드 (자동, 점사, 단발)
-    public FireMode fireMode; // 격발 모드 변수
+    public FireMode fireMode;                   // 격발 모드 변수
 
-    public Transform[] projectileSpawn; // 총알 발사 위치 배열
-    public Projectile projectile; // 총알
-    public float msBetweenShots = 100; // 총알 발사 시간 간격
-    public float muzzleVelocity = 35; // 총알 발사 속도
+    public Transform[] projectileSpawn;     // 총알 발사 위치 배열
+    public Projectile projectile;           // 총알
+    public float msBetweenShots = 100;      // 총알 발사 시간 간격
+    public float muzzleVelocity = 35;       // 총알 발사 속도
 
-    public int burstCount; // 점사 모드 총알 발사 개수
-    public int projectilesPerMag; // 탄창 총알 수
-    public float reloadTime = .3f; // 재장전 속도
+    public int burstCount;          // 점사 모드 총알 발사 개수
+    public int projectilesPerMag;   // 탄창 총알 수
+    public float reloadTime = .3f;  // 재장전 속도
 
     [Header("Recoil")]
-    public Vector2 kickMinMax = new Vector2(.05f, .5f); // 뒤쪽 반동 최소, 최대값
-    public Vector2 recoilAngleMinMax = new Vector2(3, 5); // 위쪽 반동 최소, 최대값
-    public float recoilMoveSettleTime = .1f; // 뒤쪽 반동 회복 시간
-    public float recoilRotationSettleTime = .1f; // 뒤쪽 반동 회복 시간
+    public Vector2 kickMinMax = new Vector2(.05f, .5f);     // 뒤쪽 반동 최소, 최대값
+    public Vector2 recoilAngleMinMax = new Vector2(3, 5);   // 위쪽 반동 최소, 최대값
+    public float recoilMoveSettleTime = .1f;                // 뒤쪽 반동 회복 시간
+    public float recoilRotationSettleTime = .1f;            // 뒤쪽 반동 회복 시간
 
     [Header("Effect")]
-    public Transform shell; // 탄피 레퍼런스
+    public Transform shell;         // 탄피 레퍼런스
     public Transform shellEjection; // 탄피 배출 위치 레퍼런스
-    MuzzleFlash muzzleFlash; // 총구 화염 레퍼런스
-    float nextShotTime; // 다음 총알 발사 시간
+    public AudioClip shootAudio;    // 총알 발사 사운드
+    public AudioClip reloadAudio;   // 재장전 사운드
+    MuzzleFlash muzzleFlash;        // 총구 화염 레퍼런스
+    float nextShotTime;             // 다음 총알 발사 시간
 
     bool triggerReleasedSinceLastShoot; // 지난 발사 후 방아쇠(마우스 좌클릭)을 놓았는지
-    int shotsRemainingInBurst; // 점사 모드 남은 총알
-    int projectilesRemainingInMag; // 탄창에 남아있는 총알
-    bool isReloading; // 장전중인지 여부
+    int shotsRemainingInBurst;          // 점사 모드 남은 총알
+    int projectilesRemainingInMag;      // 탄창에 남아있는 총알
+    bool isReloading;                   // 장전중인지 여부
 
-    Vector3 recoilSmoothDampVelocity; // 반동 회복 속도
-    float recoilRotSmoothDampVelocity; // 반동 회복 속도
-    float recoilAngle; // 위쪽 반동 각도
+    Vector3 recoilSmoothDampVelocity;   // 반동 회복 속도
+    float recoilRotSmoothDampVelocity;  // 반동 회복 속도
+    float recoilAngle;                  // 위쪽 반동 각도
     
 
     void Start() {
-        muzzleFlash = GetComponent<MuzzleFlash>(); // 총구 화염 레퍼런스 할당
-        shotsRemainingInBurst = burstCount; // 점사 모드 남은 총알 개수 설정
-        projectilesRemainingInMag = projectilesPerMag; // 기본 탄창 총알 개수 설정
+        muzzleFlash = GetComponent<MuzzleFlash>();      // 총구 화염 레퍼런스 할당
+        shotsRemainingInBurst = burstCount;             // 점사 모드 남은 총알 개수 설정
+        projectilesRemainingInMag = projectilesPerMag;  // 기본 탄창 총알 개수 설정
     }
 
     void LateUpdate() {
@@ -94,13 +96,16 @@ public class Gun : MonoBehaviour
             transform.localPosition -= Vector3.forward * Random.Range(kickMinMax.x, kickMinMax.y); // 뒤쪽 반동값 설정
             recoilAngle += Random.Range(recoilAngleMinMax.x, recoilAngleMinMax.y); // 위쪽 반동값 설정
             recoilAngle = Mathf.Clamp(recoilAngle, 0, 30); // 무기 반동 각도 최소, 최대 범위 지정
+
+            AudioManager.instance.PlaySound(shootAudio, transform.position); // 총알 발사 사운드 재생
         }
     }
 
     // ■ 재장전 메소드
     public void Reload() {
-        if(!isReloading && projectilesRemainingInMag != projectilesPerMag) { // 재장전중이 아니고 탄창에 총알이 꽉 차있지 않은 경우
-            StartCoroutine(AnimateReload()); // 재장전 애니메이션 코루틴 실행
+        if(!isReloading && projectilesRemainingInMag != projectilesPerMag) {    // 재장전중이 아니고 탄창에 총알이 꽉 차있지 않은 경우
+            StartCoroutine(AnimateReload());                                    // 재장전 애니메이션 코루틴 실행
+            AudioManager.instance.PlaySound(reloadAudio, transform.position);   // 재장전 사운드 재생
         }
     }
 

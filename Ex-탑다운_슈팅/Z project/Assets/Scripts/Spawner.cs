@@ -156,6 +156,9 @@ public class Spawner : MonoBehaviour
     // ■ 다음 웨이브 실행 메소드
     void NextWave() 
     {
+        if(currentWaveNumber > 0) { // 첫 번째 웨이브가 아닌 경우
+            AudioManager.instance.PlaySound2D("Level Complete"); // 웨이브 클리어 시 클리어 사운드 재생
+        }
         currentWaveNumber++; // 웨이브 숫자 증가 
 
         if(currentWaveNumber - 1 < waves.Length) { // 배열 인덱스 예외 없도록 처리

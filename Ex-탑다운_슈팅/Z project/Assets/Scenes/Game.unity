@@ -3184,7 +3184,6 @@ GameObject:
   m_Component:
   - component: {fileID: 136956077}
   - component: {fileID: 136956080}
-  - component: {fileID: 136956079}
   - component: {fileID: 136956078}
   m_Layer: 0
   m_Name: Crosshair Camera
@@ -3222,14 +3221,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: {fileID: 2020694926}
   offset: {x: 0, y: 0, z: 0}
---- !u!81 &136956079
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 136956076}
-  m_Enabled: 1
 --- !u!20 &136956080
 Camera:
   m_ObjectHideFlags: 0
@@ -16411,8 +16402,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Enemy : 10'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 662c21ade8ad9f145b720044cd2f6ac8, type: 2}
-  m_sharedMaterial: {fileID: -2127114267181809136, guid: 662c21ade8ad9f145b720044cd2f6ac8, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28645,6 +28636,7 @@ GameObject:
   - component: {fileID: 1160266548}
   - component: {fileID: 1160266547}
   - component: {fileID: 1160266546}
+  - component: {fileID: 1160266549}
   m_Layer: 0
   m_Name: Audio Manager
   m_TagString: Untagged
@@ -28694,6 +28686,37 @@ Transform:
   - {fileID: 296770681}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1160266549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1160266545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c48807732fba75b49a70e51bea59acd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundGroups:
+  - groupID: Impact
+    group:
+    - {fileID: 8300000, guid: ced178eb476bc014193547976f896084, type: 3}
+    - {fileID: 8300000, guid: 52742644fb1adee439374dae0bffa975, type: 3}
+    - {fileID: 8300000, guid: 0d6cc8981752d474081620c791613b4e, type: 3}
+  - groupID: Enemy Attack
+    group:
+    - {fileID: 8300000, guid: 2f6954394b020504ab48e311142287db, type: 3}
+  - groupID: Enemy Death
+    group:
+    - {fileID: 8300000, guid: 637ad35a68f40504d8aec0204e1ab6c1, type: 3}
+    - {fileID: 8300000, guid: 56e2535f0d7c15f49b57dc485512bd4c, type: 3}
+  - groupID: Level Complete
+    group:
+    - {fileID: 8300000, guid: 8a8b002f06b8c8746878fb3a7e2317f0, type: 3}
+  - groupID: Player Death
+    group:
+    - {fileID: 8300000, guid: 2dad2a9364092244584de2721f90207c, type: 3}
 --- !u!21 &1162482544
 Material:
   serializedVersion: 8

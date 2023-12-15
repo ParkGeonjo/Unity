@@ -88,4 +88,10 @@ public class Player : LivingEntity
             gunController.Reload(); // 재장전 메소드 호출
         }
     }
+
+    // ■ 플레이어 사망 시 처리 메소드 오버라이딩
+    public override void Die() {
+        AudioManager.instance.PlaySound("Player Death", transform.position);    // 플레이어 사망 효과음 재생
+        base.Die();
+    }
 }

@@ -89,7 +89,9 @@ public class Enemy : LivingEntity
 
     // ■ 타격 메소드 오버라이딩
     public override void TakeHit(float damage, Vector3 hitPoint, Vector3 hitDirection) {
+        AudioManager.instance.PlaySound("Impact", transform.position); // 현재 위치에 타격 사운드 재생
         if(damage >= health) { // 데미지가 현재 체력 이상인 경우
+            AudioManager.instance.PlaySound("Enemy Death", transform.position); // 현재 위치에 사망 사운드 재생
             Destroy(Instantiate(deathEffect.gameObject, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection)) as GameObject, deathEffect.startLifetime);
             // 이펙트(파티클)을 인스턴스화 하여 생성(FromToRotation 으로 방향 설정), 설정한 시간경과 후 파괴
         }
@@ -122,6 +124,7 @@ public class Enemy : LivingEntity
                 {
                     nextAttackTime = Time.time + timeBetweenAttacks;
                     // 다음 공격 시간 지정
+                    AudioManager.instance.PlaySound("Enemy Attack", transform.position); // 현재 위치에 공격 사운드 재생
                     StartCoroutine(Attack());
                     // 공격 코루틴 실행
                 }

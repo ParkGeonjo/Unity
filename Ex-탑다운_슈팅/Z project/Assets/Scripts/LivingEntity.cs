@@ -36,9 +36,9 @@ public class LivingEntity : MonoBehaviour, IDamageable // 인터페이스 상속
         }
     }
 
-    [ContextMenu("Self-Destruct")]
     // 인스펙터에서 스크립트 컴포넌트 우클릭 시 자체 파괴 버튼 추가
-    protected void Die() // 죽음 메소드
+    [ContextMenu("Self-Destruct")]
+    public virtual void Die() // 죽음 메소드
     {
         dead = true; // 죽은 판정으로 변경.
         if(OnDeath != null) // 이벤트가 있는 경우

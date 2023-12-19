@@ -3,22 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioManager : MonoBehaviour {
-    public enum AudioChannel {Master, Sfx, Music};      // 오디오 채널
+    public enum AudioChannel {Master, Sfx, Music};          // 오디오 채널
 
-    float masterVolumePercent = 1;                      // 마스터 볼륨
-    float sfxVolumePercent = 1;                         // 효과음 볼륨
-    float musicVolumePercent = 1;                       // 음악 볼륨
+    // 값을 참조하는 권한은 public 이지만 값을 설정하는 권한은 private 로
+    public float masterVolumePercent { get; private set; }  // 마스터 볼륨
+    public float sfxVolumePercent { get; private set; }     // 효과음 볼륨
+    public float musicVolumePercent { get; private set; }   // 음악 볼륨
 
-    AudioSource sfx2DSource;                            // 2D 효과음 오디오소스 레퍼런스
-    AudioSource[] musicSources;                         // 음악을 가져올 오디오소스 레퍼런스 배열
-    int activeMusicSourceIntdex;                        // 재생중인 음악 인덱스
+    AudioSource sfx2DSource;                                // 2D 효과음 오디오소스 레퍼런스
+    AudioSource[] musicSources;                             // 음악을 가져올 오디오소스 레퍼런스 배열
+    int activeMusicSourceIntdex;                            // 재생중인 음악 인덱스
 
-    public static AudioManager instance;                // 싱글톤 패턴
+    public static AudioManager instance;                    // 싱글톤 패턴
 
-    Transform audioListener;                            // 오디오 리스너 위치 레퍼런스
-    Transform playerT;                                  // 플레이어 위치 레퍼런스
+    Transform audioListener;                                // 오디오 리스너 위치 레퍼런스
+    Transform playerT;                                      // 플레이어 위치 레퍼런스
 
-    SoundLibrary library;                               // 사운드 라이브러리 레퍼런스
+    SoundLibrary library;                                   // 사운드 라이브러리 레퍼런스
 
     void Awake() {
         if(instance != null) {                                                          // 인스턴스가 생성되어 있다면
@@ -37,17 +38,19 @@ public class AudioManager : MonoBehaviour {
                 newMusicSource.transform.parent = transform;                                // 부모 오브젝트 설정
             }
 
-            GameObject newSfxSource = new GameObject("2D sfx Source");                     // 2D 오디오소스를 가질 오브젝트 생성
+            GameObject newSfxSource = new GameObject("2D sfx Source");                      // 2D 오디오소스를 가질 오브젝트 생성
             sfx2DSource = newSfxSource.AddComponent<AudioSource>();                         // 오디오소스 할당
             newSfxSource.transform.parent = transform;                                      // 부모 오브젝트 설정
 
             audioListener = FindObjectOfType<AudioListener>().transform;                    // 오디오 리스너가 있는 오브젝트의 위치를 저장
-            playerT = FindObjectOfType<Player>().transform;                                 // 플레이어 오브젝트의 위치 저장
+            if(FindObjectOfType<Player>() != null) {                                        // 플레이어 오브젝트가 있는 경우
+                playerT = FindObjectOfType<Player>().transform;                             // 플레이어 오브젝트의 위치 저장
+            }
 
             // PlayerPrefs 를 사용해 저장한 볼륨을 불러와 게임에 적용한다.
-            masterVolumePercent = PlayerPrefs.GetFloat("master vol", masterVolumePercent);
-            sfxVolumePercent = PlayerPrefs.GetFloat("sfx vol", sfxVolumePercent);
-            musicVolumePercent = PlayerPrefs.GetFloat("music vol", musicVolumePercent);
+            masterVolumePercent = PlayerPrefs.GetFloat("master vol", 1);
+            sfxVolumePercent = PlayerPrefs.GetFloat("sfx vol", 1);
+            musicVolumePercent = PlayerPrefs.GetFloat("music vol", 1);
         } 
     }
 
@@ -78,6 +81,7 @@ public class AudioManager : MonoBehaviour {
         PlayerPrefs.SetFloat("master vol", masterVolumePercent);
         PlayerPrefs.SetFloat("sfx vol", sfxVolumePercent);
         PlayerPrefs.SetFloat("music vol", musicVolumePercent);
+        PlayerPrefs.Save();
     }
 
     // ■ 음악 재생 메소드

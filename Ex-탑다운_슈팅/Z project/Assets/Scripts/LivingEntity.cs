@@ -5,7 +5,7 @@ using UnityEngine;
 public class LivingEntity : MonoBehaviour, IDamageable // 인터페이스 상속
 {
     public float startingHealth; // 시작 체력
-    protected float health; // 체력
+    public float health { get; protected set; } // 체력
     /* protected 를 통해 상속 관계가 없는 클래스에서 사용할 수 없게 한다.
        인스펙터에서도 보이지 않음. */
     protected bool dead; // 캐릭터가 죽었는지

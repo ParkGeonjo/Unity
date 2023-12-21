@@ -3,19 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameUI : MonoBehaviour {
-    public Image fadePlane; // 페이드 이미지(UI 배경) 오브젝트 레퍼런스
-    public GameObject gameOverUI; // 게임 오버 텍스트, 버튼 오브젝트 레퍼런스
+    public Image fadePlane;                         // 페이드 이미지(UI 배경) 오브젝트 레퍼런스
+    public GameObject gameOverUI;                   // 게임 오버 텍스트, 버튼 오브젝트 레퍼런스
 
-    public RectTransform newWaveBanner; // 배너 UI 레퍼런스
-    public TextMeshProUGUI newWaveTitle; // 새 웨이브 타이틀 텍스트 레퍼런스
-    public TextMeshProUGUI newWaveEnemyCount; // 새 웨이브 적 카운트 텍스트 레퍼런스
+    public RectTransform newWaveBanner;             // 배너 UI 레퍼런스
+    public TextMeshProUGUI newWaveTitle;            // 새 웨이브 타이틀 텍스트 레퍼런스
+    public TextMeshProUGUI newWaveEnemyCount;       // 새 웨이브 적 카운트 텍스트 레퍼런스
+    public TextMeshProUGUI scoreUI;                 // 점수 텍스트 레퍼런스
+    public TextMeshProUGUI gameOverScoreUI;         // 최종 점수 텍스트 레퍼런스
+    public RectTransform healthBar;                 // 체력 바 레퍼런스
 
-    Spawner spawner; // 적 스폰기 레퍼런스
+    Spawner spawner;                                // 적 스폰기 레퍼런스
+    Player player;                                  // 플레이어 레퍼런스
 
     void Start() {
-        FindObjectOfType<Player>().OnDeath += OnGameOver; // 플레이어 사망 이벤트 구독
+        player = FindObjectOfType<Player>();        // 플레이어 오브젝트 할당
+        player.OnDeath += OnGameOver;               // 플레이어 사망 이벤트 구독
+    }
+
+    void Update() {
+        scoreUI.text = ScoreKeeper.score.ToString("D6");                    // 점수 텍스트 설정, "D6" 으로 6자리로 출력
+        float healthPercent = 0;
+        if(player != null) {
+            healthPercent = player.health / player.startingHealth;          // 체력 퍼센트 계산
+        }
+        healthBar.localScale = new Vector3(healthPercent, 1, 1);        // 체력 퍼센트에 따라 체력 바 크기 설정
     }
 
     void Awake() {
@@ -37,9 +52,12 @@ public class GameUI : MonoBehaviour {
 
     // ■ 플레이어 사망(게임 오버) 시 UI 처리 메소드
     void OnGameOver() {
-        Cursor.visible = true; // 마우스 커서 보이도록 설정
-        StartCoroutine(Fade(Color.clear, Color.black, 1)); // 배경 이미지 페이드 인 효과 코루틴 시작
-        gameOverUI.SetActive(true); // 게임 오버 텍스트, 버튼 오브젝트 활성화
+        Cursor.visible = true;                                              // 마우스 커서 보이도록 설정
+        StartCoroutine(Fade(Color.clear, new Color(0, 0, 0, .95f), 1));     // 배경 이미지 페이드 인 효과 코루틴 시작
+        gameOverScoreUI.text = scoreUI.text;                                // 최종 점수 텍스트 설정
+        scoreUI.gameObject.SetActive(false);                                // 게임 화면 점수 텍스트 오브젝트 비활성화
+        healthBar.transform.parent.gameObject.SetActive(false);             // 체력 바 오브젝트 비활성화
+        gameOverUI.SetActive(true);                                         // 게임 오버 텍스트, 버튼 오브젝트 활성화
     }
 
     // ■ 새 웨이브 배너 애니메이션 코루틴
@@ -84,6 +102,11 @@ public class GameUI : MonoBehaviour {
 
     // ■ 새 게임 시작 메소드
     public void startNewGame() {
-        Application.LoadLevel("Game"); // 게임 씬, 게임을 다시 로드
+        SceneManager.LoadScene("Game"); // 게임 씬, 게임을 다시 로드
+    }
+
+    // ■ 메인 메뉴 이동 메소드
+    public void ReturnToMainMenu() {
+        SceneManager.LoadScene("Menu"); // 메뉴 씬, 메뉴를 로드
     }
 }

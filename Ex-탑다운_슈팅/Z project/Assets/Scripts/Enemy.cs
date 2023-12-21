@@ -12,6 +12,8 @@ public class Enemy : LivingEntity
 
     public ParticleSystem deathEffect; // 사망 이펙트 레퍼런스
 
+    public static event System.Action OnDeathStatic;        // 적 사망 정적 이벤트
+
     UnityEngine.AI.NavMeshAgent pathfinder; // 내비게이션 레퍼런스
     Transform target; // 적의 타겟(플레이어) 트랜스폼
     LivingEntity targetEntity; // 타겟(플레이어) 레퍼런스
@@ -82,7 +84,8 @@ public class Enemy : LivingEntity
         }
         startingHealth = enemyHealth; // 적의 체력 설정
 
-        skinMatreial = GetComponent<Renderer>().sharedMaterial; // 현재 오브젝트의 마테리얼 저장.
+        deathEffect.startColor = new Color(skinColour.r, skinColour.g, skinColour.b);       // 적 사망 파티클 색상을 현재 적의 색상으로 변경
+        skinMatreial = GetComponent<Renderer>().material; // 현재 오브젝트의 마테리얼 저장.
         skinMatreial.color = skinColour; // 적의 색상 설정
         originalColor = skinMatreial.color; // 현재 색상 저장
     }
@@ -91,6 +94,9 @@ public class Enemy : LivingEntity
     public override void TakeHit(float damage, Vector3 hitPoint, Vector3 hitDirection) {
         AudioManager.instance.PlaySound("Impact", transform.position); // 현재 위치에 타격 사운드 재생
         if(damage >= health) { // 데미지가 현재 체력 이상인 경우
+            if(OnDeathStatic != null) {     // 구독자가 있는 경우
+                OnDeathStatic();            // 이벤트 호출
+            }
             AudioManager.instance.PlaySound("Enemy Death", transform.position); // 현재 위치에 사망 사운드 재생
             Destroy(Instantiate(deathEffect.gameObject, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection)) as GameObject, deathEffect.startLifetime);
             // 이펙트(파티클)을 인스턴스화 하여 생성(FromToRotation 으로 방향 설정), 설정한 시간경과 후 파괴

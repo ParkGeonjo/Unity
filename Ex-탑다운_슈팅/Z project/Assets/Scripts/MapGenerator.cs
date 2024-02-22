@@ -18,6 +18,7 @@ public class MapGenerator : MonoBehaviour
     public float outlinePercent; // 테두리 두께
 
     public float tileSize; // 타일 사이즈
+    public float obstacleSize; // 장애물 사이즈
     List<Coord> allTileCoords; // 모든 좌표값을 저장할 리스트 생성
     Queue<Coord> shuffledTileCoords; // 셔플된 좌표값을 저장할 큐 생성
     Queue<Coord> shuffledOpenTileCoords; // 셔플된 오픈 타일 좌표값을 저장할 큐 생성
@@ -26,27 +27,32 @@ public class MapGenerator : MonoBehaviour
 
     Map currentMap; // 현재 맵
 
-    void Start() {
+    void Start()
+    {
         FindObjectOfType<Spawner>().OnNewWave += OnNewWave; // 이벤트 구독
     }
 
     // ■ 웨이브 이벤트 구독자 메소드
-    void OnNewWave(int waveNumber) {
+    void OnNewWave(int waveNumber)
+    {
         mapIndex = waveNumber - 1; // 맵 배열 인덱스 설정
         GeneratorMap(); // 맵 생성
     }
 
 
     // ■ 맵 생성 메소드
-    public void GeneratorMap() {
+    public void GeneratorMap()
+    {
         currentMap = maps[mapIndex]; // 맵 설정
         tileMap = new Transform[currentMap.mapSize.x, currentMap.mapSize.y]; // 타일맵 배열 크기 설정
         System.Random prng = new System.Random(currentMap.seed); // 난수 생성
 
         // ■ 좌표(Coord)들을 생성
         allTileCoords = new List<Coord>(); // 새 리스트 생성
-        for (int x = 0; x < currentMap.mapSize.x; x++) {
-            for (int y = 0; y < currentMap.mapSize.y; y++) { // 지정한 맵 크기만큼 루프
+        for (int x = 0; x < currentMap.mapSize.x; x++)
+        {
+            for (int y = 0; y < currentMap.mapSize.y; y++)
+            { // 지정한 맵 크기만큼 루프
                 allTileCoords.Add(new Coord(x, y)); // 리스트에 타일 좌표 추가
             }
         }
@@ -70,8 +76,10 @@ public class MapGenerator : MonoBehaviour
         // 현재 오브젝트를 mapHolder 오브젝트의 부모 오브젝트로 설정.
 
         // ■ 타일들을 생성
-        for (int x = 0; x < currentMap.mapSize.x; x++) {
-            for (int y = 0; y < currentMap.mapSize.y; y++) { // 지정한 맵 크기만큼 루프
+        for (int x = 0; x < currentMap.mapSize.x; x++)
+        {
+            for (int y = 0; y < currentMap.mapSize.y; y++)
+            { // 지정한 맵 크기만큼 루프
                 Vector3 tilePosition = CoordToPosition(x, y);
                 /* 타일이 생성될 위치 저장. 
                    -지정한 맵 가로 길이/2 를 설정하면 0에서 가로길이의 절반만큼 왼쪽으로 이동한 위치가 된다.
@@ -98,12 +106,14 @@ public class MapGenerator : MonoBehaviour
 
         List<Coord> allOpenCoords = new List<Coord>(allTileCoords); // 오픈 타일 배열, 일단 모든 타일 좌표로 초기화.
 
-        for (int i = 0; i < obstacleCount; i++) { // 장애물 갯수만큼 루프
+        for (int i = 0; i < obstacleCount; i++)
+        { // 장애물 갯수만큼 루프
             Coord randomCoord = GetRandomCoord(); // 랜덤한 좌표를 받아옴
             obstaclemap[randomCoord.x, randomCoord.y] = true; // 해당 랜덤 위치 활성화
             currentObstacleCount++; // 장애물 개수 증가
-            if (randomCoord != currentMap.mapCenter && MaplsFullyAccessible(obstaclemap, currentObstacleCount)) {
-            // 랜덤 위치가 맵 중앙이 아니고 막힌 곳을 만들지 않을 때 아래 코드 실행
+            if (randomCoord != currentMap.mapCenter && MaplsFullyAccessible(obstaclemap, currentObstacleCount))
+            {
+                // 랜덤 위치가 맵 중앙이 아니고 막힌 곳을 만들지 않을 때 아래 코드 실행 
 
                 float obstacleHeight = Mathf.Lerp(currentMap.minObstacleHeight, currentMap.maxObstacleHeight, (float)prng.NextDouble());
                 // 장애물 높이 설정
@@ -115,7 +125,7 @@ public class MapGenerator : MonoBehaviour
                 newObstacle.parent = mapHolder;
                 // 장애물의 부모 오브젝트 설정
 
-                newObstacle.localScale = new Vector3((1 - outlinePercent) * tileSize, obstacleHeight, (1 - outlinePercent) * tileSize);
+                newObstacle.localScale = new Vector3((1 - outlinePercent) * obstacleSize, obstacleHeight, (1 - outlinePercent) * obstacleSize);
                 // 장애물 크기를 지정한 테두리 두께만큼 줄여서 타일 사이즈와 맞게 지정하고 높이를 지정한다. 
 
                 Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
@@ -132,12 +142,12 @@ public class MapGenerator : MonoBehaviour
                 allOpenCoords.Remove(randomCoord);
                 // 오픈 타일 좌표만 남기기 위해 모든 타일 좌표에서 장애물이 있는 타일 좌표를 빼준다.
             }
-            else { // 장애물 생성 조건이 맞지 않는 경우
+            else
+            { // 장애물 생성 조건이 맞지 않는 경우
                 obstaclemap[randomCoord.x, randomCoord.y] = false; // 해당 랜덤 위치 비활성화
                 currentObstacleCount--; // 장애물 개수 감소
             }
         }
-
         shuffledOpenTileCoords = new Queue<Coord>(Utility.ShuffleArray(allOpenCoords.ToArray(), currentMap.seed));
         // 새 큐 생성, 셔플된 오픈 타일 좌표값 배열을 저장함
 
@@ -179,7 +189,8 @@ public class MapGenerator : MonoBehaviour
 
 
     // ■ 맵 확인 메소드 (Flood-fill Algorithm)
-    bool MaplsFullyAccessible(bool[,] obstacleMap, int currentObstacleCount) {
+    bool MaplsFullyAccessible(bool[,] obstacleMap, int currentObstacleCount)
+    {
         bool[,] mapFlag = new bool[obstacleMap.GetLength(0), obstacleMap.GetLength(1)];
         // 지나온 비어있는 타일을 체크할 배열을 생성
         Queue<Coord> queue = new Queue<Coord>(); // 큐 생성
@@ -188,17 +199,23 @@ public class MapGenerator : MonoBehaviour
 
         int accessibleTileCount = 1; // 접근 가능한 타일 개수(맵 중앙 포함이므로 기본 1)
 
-        while (queue.Count > 0) { // 큐에 들어있는 값이 있는 경우
+        while (queue.Count > 0)
+        { // 큐에 들어있는 값이 있는 경우
             Coord tile = queue.Dequeue(); // 큐에 저장된 맨 앞 타일 위치를 빼서 가져옴
 
-            for (int x = -1; x <= 1; x++) {
-                for (int y = -1; y <= 1; y++) { // 주변 타일 루프
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                { // 주변 타일 루프
                     int neighbourX = tile.x + x; // 주변 타일의 x 좌표
                     int neighbourY = tile.y + y; // 주변 타일의 y 좌표
-                    if (x == 0 || y == 0) { // 주변 타일 중 대각선상에 위치하지 않은 경우
-                        if (neighbourX >= 0 && neighbourX < obstacleMap.GetLength(0) && neighbourY >= 0 && neighbourY < obstacleMap.GetLength(1)) {
+                    if (x == 0 || y == 0)
+                    { // 주변 타일 중 대각선상에 위치하지 않은 경우
+                        if (neighbourX >= 0 && neighbourX < obstacleMap.GetLength(0) && neighbourY >= 0 && neighbourY < obstacleMap.GetLength(1))
+                        {
                             // 체크 중 맵 크기를 벗어나지 않는 경우
-                            if (!mapFlag[neighbourX, neighbourY] && !obstacleMap[neighbourX, neighbourY]) {
+                            if (!mapFlag[neighbourX, neighbourY] && !obstacleMap[neighbourX, neighbourY])
+                            {
                                 // 체크된 타일이 아니고, 장애물이 아닌 경우
 
                                 mapFlag[neighbourX, neighbourY] = true; // 타일 체크
@@ -219,13 +236,33 @@ public class MapGenerator : MonoBehaviour
     }
 
     // ■ 좌표 변환 메소드
-    Vector3 CoordToPosition(int x, int y) {
+    Vector3 CoordToPosition(int x, int y)
+    {
         return new Vector3(-currentMap.mapSize.x / 2f + 0.5f + x, 0, -currentMap.mapSize.y / 2f + 0.5f + y) * tileSize;
         // 입력받은 x, y 좌표로 Vector3 상의 타일 위치 설정
     }
 
     // ■ 플레이어 좌표 -> 타일 좌표 변환 메소드
-    public Transform GetTileFromPosition(Vector3 position) {
+    public Transform GetTileFromPosition(Vector3 position)
+    {
+        int x = Mathf.RoundToInt(position.x / tileSize + (currentMap.mapSize.x - 1) / 2f);
+        // 타일 x 좌표 계산, int 형변환시 내림하기 때문에 메소드를 통해 정수로 반올림한다.
+        int y = Mathf.RoundToInt(position.z / tileSize + (currentMap.mapSize.y - 1) / 2f);
+        // 타일 y 좌표 계산.
+
+        x = Mathf.Clamp(x, 0, tileMap.GetLength(0) - 1);
+        // 타일맵 배열 인덱스 초과 오류 방지를 위해 x 값 제한.
+        y = Mathf.Clamp(y, 0, tileMap.GetLength(1) - 1);
+        // 타일맵 배열 인덱스 초과 오류 방지를 위해 y 값 제한.
+
+        return tileMap[x, y];
+        // 타일 위치 반환
+    }
+
+
+    // ■ 입력받은 좌표, 거리 -> 거리 내의 근처 랜덤 오픈 타일 좌표 변환 메소드
+    public Transform GetNearOpenTileFromPosition(Vector3 position, int tile_dis)
+    {
         int x = Mathf.RoundToInt(position.x / tileSize + (currentMap.mapSize.x - 1) / 2f);
         // 타일 x 좌표 계산, int 형변환시 내림하기 때문에 메소드를 통해 정수로 반올림한다.
         int y = Mathf.RoundToInt(position.z / tileSize + (currentMap.mapSize.y - 1) / 2f);
@@ -241,7 +278,8 @@ public class MapGenerator : MonoBehaviour
     }
 
     // ■ 큐에 저장된 좌표를 가져오는 메소드
-    public Coord GetRandomCoord() {
+    public Coord GetRandomCoord()
+    {
         Coord randomCoord = shuffledTileCoords.Dequeue(); // 큐의 첫 번째 값을 가져온다.
         shuffledTileCoords.Enqueue(randomCoord); // 가져온 값을 큐의 맨 뒤로 넣는다.
 
@@ -249,7 +287,8 @@ public class MapGenerator : MonoBehaviour
     }
 
     // ■ 랜덤한 오픈 타일을 가져오는 메소드
-    public Transform GetRandomOpenTile() {
+    public Transform GetRandomOpenTile()
+    {
         Coord randomCoord = shuffledOpenTileCoords.Dequeue(); // 큐의 첫 번째 값을 가져온다.
         shuffledOpenTileCoords.Enqueue(randomCoord); // 가져온 값을 큐의 맨 뒤로 넣는다.
 
@@ -258,33 +297,40 @@ public class MapGenerator : MonoBehaviour
 
     // ■ 타일 좌표 구조체
     [System.Serializable] // 인스펙터에서 보이도록 설정
-    public struct Coord {
+    public struct Coord
+    {
         public int x, y; // x, y 좌표값
 
-        public Coord(int _x, int _y) { // 생성자로 좌표값 초기화
+        public Coord(int _x, int _y)
+        { // 생성자로 좌표값 초기화
             x = _x;
             y = _y;
         }
 
-        public static bool operator ==(Coord c1, Coord c2) { // 구조체 비교 연산자 정의
+        public static bool operator ==(Coord c1, Coord c2)
+        { // 구조체 비교 연산자 정의
             return c1.x == c2.x && c1.y == c2.y;
         }
-        public static bool operator !=(Coord c1, Coord c2) { // 구조체 비교 연산자 정의
+        public static bool operator !=(Coord c1, Coord c2)
+        { // 구조체 비교 연산자 정의
             return !(c1 == c2);
         }
 
-        public override bool Equals(object obj) { // 비교 메소드 재정의
+        public override bool Equals(object obj)
+        { // 비교 메소드 재정의
             return base.Equals(obj);
         }
 
-        public override int GetHashCode() { // GetHashCode 메소드 재정의
+        public override int GetHashCode()
+        { // GetHashCode 메소드 재정의
             return base.GetHashCode();
         }
     }
 
     // ■ 맵 속성들을 저장 할 클래스
     [System.Serializable] // 인스펙터에서 보이도록 설정
-    public class Map {
+    public class Map
+    {
         public Coord mapSize; // 맵 크기
         [Range(0, 1)] // 장애물 비율 범위 설정
         public float obstaclePercent; // 맵의 장애물 비율
@@ -294,8 +340,10 @@ public class MapGenerator : MonoBehaviour
         public Color foregroundColour; // 장애물 전면부 색상
         public Color backgroungColour; // 장애물 후면부 색상
 
-        public Coord mapCenter { // 맵 중앙 좌표
-            get {
+        public Coord mapCenter
+        { // 맵 중앙 좌표
+            get
+            {
                 return new Coord(mapSize.x / 2, mapSize.y / 2); // 중앙 좌표 지정 후 리턴
             }
         }

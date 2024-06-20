@@ -26,7 +26,7 @@ public class ScoreKeeper : MonoBehaviour {
 
         lastEnemyKillTime = Time.time;                                  // 적 처치 시간 설정
 
-        score += 5 + (int)Mathf.Pow(2, streakCount);                    // 점수 추가
+        score += 5 + streakCount;                                       // 점수 추가
     }
 
     // ■ 플레이어 사망 시 호출될 메소드

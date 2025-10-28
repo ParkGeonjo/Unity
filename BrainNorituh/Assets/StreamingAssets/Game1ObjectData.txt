@@ -1,0 +1,7 @@
+개,Game1Prefabs/Canecorso
+사슴,Game1Prefabs/Deer
+말,Game1Prefabs/Horse
+토끼,Game1Prefabs/Rabbit
+전갈,Game1Prefabs/Scorpion
+거위,Game1Prefabs/Swan_goose
+늑대,Game1Prefabs/Wolf

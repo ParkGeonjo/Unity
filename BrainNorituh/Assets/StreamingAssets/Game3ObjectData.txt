@@ -1,0 +1,6 @@
+반창고,Game3Prefabs/hurt
+소화기,Game3Prefabs/fire
+색연필,Game3Prefabs/drawing
+칫솔,Game3Prefabs/brushing
+목줄,Game3Prefabs/walking
+튜브,Game3Prefabs/swimming
